@@ -8,6 +8,7 @@ const fccTesting = require('./freeCodeCamp/fcctesting.js');
 const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const rootPath = process.cwd();
@@ -38,11 +39,12 @@ myDB(async (client) => {
     res.render('pug', {
       title: 'Connected to Database',
       message: 'Please login',
-      showLogin: true
+      showLogin: true,
+      showRegistration: true
     });
   });
 
-  const authentication = passport.authenticate('local', {failureRedirect: '/'})
+  const authentication = passport.authenticate('local', { failureRedirect: '/' });
 
   app.route('/login').post(authentication, (req, res) => {
     res.redirect('/profile');
@@ -56,7 +58,42 @@ myDB(async (client) => {
   }
 
   app.route('/profile').get(ensureAuthenticated, (req, res) => {
-    res.render(`${rootPath}/views/pug/profile`);
+    res.render(`${rootPath}/views/pug/profile`, {
+        username: req.user.username
+      }
+    );
+  });
+
+  app.route('/logout').get((req, res) => {
+    req.logOut();
+    res.redirect('/');
+  });
+
+  app.route('/register').post((req, res, next) => {
+    myDataBase.findOne({username: req.body.username}, (err, user) => {
+      if (err) {
+        return next();
+      } else if (user) {
+        return res.redirect('/');
+      }
+      const hash = bcrypt.hashSync(req.body.password, 12);
+
+      myDataBase.insertOne({
+        username: req.body.username,
+        password: hash
+      }, (err, doc) => {
+        if (err) {
+          res.redirect('/');
+        }
+        next(null, doc.ops[0]);
+      });
+    });
+  }, passport.authenticate('local', { failureRedirect: '/' }), (req, res, next) => {
+    res.redirect('/profile');
+  });
+
+  app.use((req, res, next) => {
+    res.status(404).type('text').send('Not Found');
   });
 
   passport.use(new LocalStrategy((username, password, done) => {
@@ -65,8 +102,8 @@ myDB(async (client) => {
     
       if (err) return done(err);
       if (!user) return done(null, false);
-      if (password !== user.password) return done(null, false);
-    
+      if (!bcrypt.compareSync(password, user.password)) return done(null, false);
+
       return done(null, user);
     });
   }));
