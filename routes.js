@@ -27,9 +27,7 @@ module.exports = function (app, myDataBase) {
     });
 
     app.route('/profile').get(ensureAuthenticated, (req, res) => {
-        console.log(req.user.username, 'username')
-        console.log(req.user.name, 'name')
-        res.render('pug/profile', { username: req.user.username });
+        res.render('pug/profile', { username: req.user.username || req.user.name });
     });
 
     app.route('/logout').get((req, res) => {
@@ -66,7 +64,6 @@ module.exports = function (app, myDataBase) {
     app.route('/auth/github').get(passport.authenticate('github'));
 
     app.route('/auth/github/callback').get(passport.authenticate('github', { failureRedirect: '/', successRedirect: '/profile' }), (req, res) => {
-        console.log('gh', passport.authenticate('github', { failureRedirect: '/', successRedirect: '/profile' }))
         res.redirect('/profile');
     });
 
