@@ -11,10 +11,13 @@ const auth = require('./auth.js');
 
 const app = express();
 
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
+
+
 app.set('view engine', 'pug');
 
 fccTesting(app); //For FCC testing purposes
-
 app.use(express.static(process.cwd()));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -31,7 +34,11 @@ app.use(passport.session());
 
 myDB(async (client) => {
     const myDataBase = await client.db('advancedTest').collection('authUsers');
-    // const myDataBase = await client.db('database').collection('users');
+
+    io.on('connect', (socket) => {
+        console.log('A user has connected');
+        console.log(socket)
+    });
 
     routes(app, myDataBase);
     auth(app, myDataBase);
@@ -47,6 +54,6 @@ myDB(async (client) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+http.listen(PORT, () => {
     console.log('Listening on port ' + PORT);
 });
