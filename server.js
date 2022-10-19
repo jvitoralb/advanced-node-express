@@ -10,9 +10,9 @@ const auth = require('./auth.js');
 
 
 const app = express();
-
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
+const PORT = process.env.PORT || 3000;
 
 
 app.set('view engine', 'pug');
@@ -38,7 +38,7 @@ myDB(async (client) => {
     routes(app, myDataBase);
     auth(app, myDataBase);
 
-    io.on('connect', (socket) => {
+    io.on('connection', (socket) => {
         console.log('A user has connected');
     });
 }).catch((err) => {
@@ -50,8 +50,6 @@ myDB(async (client) => {
     });
 });
 
-
-const PORT = process.env.PORT || 3000;
 
 http.listen(PORT, () => {
     console.log('Listening on port ' + PORT);
