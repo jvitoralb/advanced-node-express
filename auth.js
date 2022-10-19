@@ -1,6 +1,9 @@
+require('dotenv').config();
+
 const bcrypt = require('bcrypt');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
+const GitHubStrategy = require('passport-github');
 const ObjectID = require('mongodb').ObjectID;
 
 
@@ -25,4 +28,14 @@ module.exports = function(app, myDataBase) {
             return done(null, user);
         });
     }));
+
+    passport.use(new GitHubStrategy({
+        clientID: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
+        callbackURL: 'https://advanced-node-express-production.up.railway.app/auth/github/callback'
+    },  (accessToken, refreshToken, profile, cb) => {
+            console.log(accessToken, refreshToken, cb)
+            console.log('PROFILE ->', profile)
+        }
+    ));
 }
