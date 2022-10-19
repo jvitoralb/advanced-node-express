@@ -39,7 +39,7 @@ module.exports = function(app, myDataBase) {
                     id: profile.id,
                     name: profile.displayName,
                     photo: profile.photos[0].value || '',
-                    email: profile.emails.isArray() ? profile.emails[0].value : 'No public email',
+                    email: Array.isArray(profile.emails) ? profile.emails[0].value : 'No public email',
                     create_on: new Date(),
                     provider: profile.provider
                 },
