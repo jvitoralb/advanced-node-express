@@ -53,10 +53,10 @@ module.exports = function(app, myDataBase) {
                 upsert: true,
                 new: true
             }, (err, doc) => {
-                if (err) return console.log('err', err);
-                return cb(null, doc.value);
-            })
-            console.log('PROFILE ->', profile)
+                    if (err) return console.log('err', err);
+                    return cb(null, doc.value);
+                }
+            )
         }
     ));
 }
