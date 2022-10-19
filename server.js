@@ -35,13 +35,12 @@ app.use(passport.session());
 myDB(async (client) => {
     const myDataBase = await client.db('advancedTest').collection('authUsers');
 
-    io.on('connect', (socket) => {
-        console.log('A user has connected');
-        console.log(socket)
-    });
-
     routes(app, myDataBase);
     auth(app, myDataBase);
+
+    io.on('connect', (socket) => {
+        console.log('A user has connected');
+    });
 }).catch((err) => {
     app.route('/').get((req, res) => {
         res.render('pug', {
