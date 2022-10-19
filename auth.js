@@ -34,7 +34,28 @@ module.exports = function(app, myDataBase) {
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
         callbackURL: 'https://advanced-node-express-production.up.railway.app/auth/github/callback'
     },  (accessToken, refreshToken, profile, cb) => {
-            console.log(accessToken, refreshToken, cb)
+            myDataBase.findOneAndUpdate({ id: profile.id }, {
+                $setOnInsert: {
+                    id: profile.id,
+                    name: profile.displayName,
+                    photo: profile.photos[0].value || '',
+                    email: profile.emails.isArray() ? profile.emails[0].value : 'No public email',
+                    create_on: new Date(),
+                    provider: profile.provider
+                },
+                $set: {
+                    last_login: new Date()
+                },
+                $inc: {
+                    login_count: 1
+                }
+            }, {
+                upsert: true,
+                new: true
+            }, (err, doc) => {
+                if (err) return console.log('err', err);
+                return cb(null, doc.value);
+            })
             console.log('PROFILE ->', profile)
         }
     ));
