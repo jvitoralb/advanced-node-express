@@ -66,17 +66,18 @@ myDB(async (client) => {
     }));
 
     io.on('connection', (socket) => {
+        console.log(socket.request.user)
         currentUsers++;
         io.emit('user', {
-            name: (socket.request.user.name || socket.request.user.username),
+            name: socket.request.user.name || 'Visitor',
             currentUsers,
             connected: true
         });
-        console.log(`${(socket.request.user.name || socket.request.user.username)} has connected`);
+        // console.log(`${socket.request.user.name} has connected`);
 
         socket.on('disconnect', () => {
             currentUsers--;
-            console.log(`${(socket.request.user.name || socket.request.user.username)} has disconnected`);
+            console.log(`${socket.request.user.name} has disconnected`);
         });
     });
 }).catch((err) => {

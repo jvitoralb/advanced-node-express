@@ -3,9 +3,9 @@ $(document).ready(function () {
     const socket = io();
 
     socket.on('user', function(data) {
+        console.log(data, 'data');
+        $('#num-users').text(`${data.currentUsers} users online.`);
         let message = `${data.name}${(data.connected ? ' has joined the chat.' : ' has left the chat.')}`;
-        console.log(data);
-        $('num-users').text(`${data.currentUsers} users online.`);
         $('#messages').append(
             $('<li>').html(`<b>${message}</b>`)
         );
