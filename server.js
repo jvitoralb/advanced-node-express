@@ -34,11 +34,14 @@ app.use(passport.session());
 
 myDB(async (client) => {
     const myDataBase = await client.db('advancedTest').collection('authUsers');
+    let currentUsers = 0;
 
     routes(app, myDataBase);
     auth(app, myDataBase);
 
     io.on('connection', (socket) => {
+        currentUsers++
+        io.emit('user count', currentUsers);
         console.log('A user has connected');
     });
 }).catch((err) => {
