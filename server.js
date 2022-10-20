@@ -7,7 +7,12 @@ const fccTesting = require('./freeCodeCamp/fcctesting.js');
 const session = require('express-session');
 const passport = require('passport');
 const auth = require('./auth.js');
+const MongoStore = require('connect-mongo');
+const cookieParser = require('cookie-parser');
+const passportSocketIO = require('passport.socketio');
 
+
+const store = new MongoStore({ url: process.env.MONGO_URI });
 
 const app = express();
 const http = require('http').createServer(app);
@@ -23,14 +28,27 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
+    key: 'express.sid',
     secret: process.env.SESSION_SECRET,
     resave: true,
     saveUninitialized: true,
+    store: store,
     cookie: { secure: false }
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+const onAuthorizeFail = (data, message, error, accept) => {
+    if (error) throw new Error(message);
+    console.log('Fail to connect to socket.io', message)
+    accept(null, false);
+}
+
+const onAuthorizeSucess = (data, accept) => {
+    console.log('Successful connection to socket.io')
+    accept(null, true);
+}
 
 myDB(async (client) => {
     const myDataBase = await client.db('advancedTest').collection('authUsers');
@@ -39,14 +57,23 @@ myDB(async (client) => {
     routes(app, myDataBase);
     auth(app, myDataBase);
 
+    io.use(passportSocketIO.authorize({
+        cookieParser: cookieParser,
+        key: 'express.sid',
+        secret: process.env.SESSION_SECRET,
+        store: store,
+        success: onAuthorizeSucess,
+        fail: onAuthorizeFail
+    }));
+
     io.on('connection', (socket) => {
         currentUsers++;
         io.emit('user count', currentUsers);
-        console.log('A user has connected');
+        console.log(`${(socket.request.user.name || socket.request.user.username)} has connected`);
 
         socket.on('disconnect', () => {
             currentUsers--;
-            console.log('A user has disconnected - ' + socket.id);
+            console.log(`${(socket.request.user.name || socket.request.user.username)} has disconnected`);
         });
     });
 }).catch((err) => {
