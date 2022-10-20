@@ -7,18 +7,17 @@ const fccTesting = require('./freeCodeCamp/fcctesting.js');
 const session = require('express-session');
 const passport = require('passport');
 const auth = require('./auth.js');
-const MongoStore = require('connect-mongo');
 const cookieParser = require('cookie-parser');
 const passportSocketIO = require('passport.socketio');
 
 
-const store = new MongoStore({ url: process.env.MONGO_URI });
-
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
-const PORT = process.env.PORT || 3000;
+const MongoStore = require('connect-mongo')(session);
+const store = new MongoStore({ url: process.env.MONGO_URI });
 
+const PORT = process.env.PORT || 3000;
 
 app.set('view engine', 'pug');
 
