@@ -61,7 +61,7 @@ module.exports = function (app, myDataBase) {
                 next(null, doc.ops[0]);
             });
         });
-    }, passport.authenticate('local', { failureRedirect: '/' }), (req, res) => {
+    }, authentication, (req, res) => {
         res.redirect('/profile');
     });
 

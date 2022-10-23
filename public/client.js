@@ -9,11 +9,6 @@ $(document).ready(function () {
             $('<li>').html(`<b>${message}</b>`)
         );
     });
-    // socket.on('user', data => {
-    //     $('#num-users').text(data.currentUsers + ' users online');
-    //     let message = data.name + (data.connected ? ' has joined the chat.' : ' has left the chat.');
-    //     $('#messages').append($('<li>').html('<b>' + message + '</b>'));
-    // });
 
     socket.on('chat message', function(data) {
         $('#messages').append(
